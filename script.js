@@ -111,7 +111,30 @@ exportBtn.addEventListener('click', () => {
                 continue;
             }
         }
-        // If none loaded, provide a helpful message for local file previewers
+        // If none loaded locally, try fetching a remote copy from a CDN
+        const cdnUrls = [
+            'https://github.com/googlefonts/noto-cjk/raw/main/Sans/Variable/TTF/NotoSansSC-VF.ttf',
+            'https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/NotoSansSC-Regular.otf'
+        ];
+        for (let url of cdnUrls) {
+            try {
+                console.log('尝试从 CDN 下载字体', url);
+                const resp = await fetch(url);
+                if (!resp.ok) { console.log('CDN 字体下载失败', resp.status); continue; }
+                const buf = await resp.arrayBuffer();
+                const b64 = arrayBufferToBase64(buf);
+                const name = url.split('/').pop();
+                const FONT_NAME = name.replace(/[^a-zA-Z0-9]/g, '_');
+                doc.addFileToVFS(name, b64);
+                doc.addFont(name, FONT_NAME, 'normal');
+                doc.setFont(FONT_NAME);
+                console.log('成功从 CDN 加载字体', FONT_NAME);
+                return FONT_NAME;
+            } catch (e) {
+                console.warn('从 CDN 下载字体出错', url, e);
+                continue;
+            }
+        }
         if (location.protocol === 'file:') {
             statusEl.textContent = '未嵌入字体：若在本地打开，请使用静态服务器（例如 `python -m http.server`）或部署到 GitHub Pages。';
         }
