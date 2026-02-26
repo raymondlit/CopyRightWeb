@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <title>软著申报助手 Web版</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- jszip 用于解压 ZIP 文件 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- jsPDF 用于生成 PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <h1>软著申报助手（Web）</h1>
+    <p>将包含源码的目录压缩为 ZIP 后上传，程序会在浏览器内统计并生成 PDF。</p>
+    <input type="file" id="zipInput" accept=".zip" />
+    <button id="scanBtn" disabled>扫描并统计</button>
+    <button id="exportBtn" disabled>导出为 PDF</button>
+    <div id="status"></div>
+    <pre id="fileList"></pre>
+    <script src="script.js"></script>
+</body>
+</html>
