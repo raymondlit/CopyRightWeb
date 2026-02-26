@@ -36,6 +36,10 @@ git subtree push --prefix web_app origin gh-pages
 - 支持的文件类型在 `script.js` 中指定，可根据需要扩展。
 - PDF 生成可能在大型项目下耗时，取决于浏览器性能。
 
+### 页面裁剪选项
+
+在导出按钮旁边有一个“仅输出前30页与后30页”的复选框。勾选后，生成的 PDF 会在导出前保留前 30 页和最后 30 页，中间部分自动舍弃，用于快速预览或控制文件大小。
+
 ### 字体支持
 
 为了正确渲染中文，仓库已在 `web_app/fonts/` 目录包含开源字体 **Noto Sans SC**。由于一些浏览器和 jsPDF 对**可变字体（Variable Font，VF）**支持不佳，当前目录中最好含有一个普通静态字体，比如 `NotoSansSC-Regular.ttf`。
@@ -51,6 +55,16 @@ NotoSansSC-VF.ttf   # 仅在其他文件缺失时使用
 
 如若仅有 VF 文件，jsPDF 可能无法正确映射中文字符，从而出现乱码。若遇到输出依旧怪异，请替换成或下载一个静态版本。
 
+### CDN 回退
+
+当本地 `fonts/` 目录丢失或字体过大无法提交时，脚本还会自动尝试从互联网上下载字体——目前使用 Google Fonts/CJK GitHub 仓库中的资源。此操作需要网络连接，第一次运行可能稍慢；若 CDN 也不可用，则仍会退回默认字体并可能出现乱码。错误和尝试日志会记录在控制台中。
+
+示例 URL：
+
+```text
+https://github.com/googlefonts/noto-cjk/raw/main/Sans/Variable/TTF/NotoSansSC-VF.ttf
+https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/NotoSansSC-Regular.otf
+```
 > **重要**：若直接通过 `file://` 打开，浏览器的同源策略会阻止对 `fonts/` 目录的访问（CORS 错误），导致字体无法加载并出现乱码。请通过本地静态服务器（例如 `python -m http.server`、`npx serve` 等）或部署至 GitHub Pages 才能正常运行。
 
 ### 故障排查

@@ -3,6 +3,7 @@
 const zipInput = document.getElementById('zipInput');
 const scanBtn = document.getElementById('scanBtn');
 const exportBtn = document.getElementById('exportBtn');
+const trimCheckbox = document.getElementById('trimPages');
 const statusEl = document.getElementById('status');
 const fileListEl = document.getElementById('fileList');
 
@@ -191,6 +192,15 @@ exportBtn.addEventListener('click', () => {
             y += lineHeight; // small gap after content
         }
 
+        if (trimCheckbox && trimCheckbox.checked) {
+            const total = doc.getNumberOfPages();
+            // remove pages 31 .. total-30
+            if (total > 60) {
+                for (let p = total - 30; p > 30; p--) {
+                    doc.deletePage(p);
+                }
+            }
+        }
         doc.save('code_export.pdf');
         statusEl.textContent = 'PDF 下载完成';
     })();
