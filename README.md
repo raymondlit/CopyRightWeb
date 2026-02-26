@@ -35,3 +35,24 @@ git subtree push --prefix web_app origin gh-pages
 - 所有操作均在客户端完成，无需后端支持。
 - 支持的文件类型在 `script.js` 中指定，可根据需要扩展。
 - PDF 生成可能在大型项目下耗时，取决于浏览器性能。
+
+### 字体支持
+
+为了正确渲染中文，仓库已在 `web_app/fonts/` 目录包含开源字体 **Noto Sans SC**。由于一些浏览器和 jsPDF 对**可变字体（Variable Font，VF）**支持不佳，当前目录中最好含有一个普通静态字体，比如 `NotoSansSC-Regular.ttf`。
+
+`script.js` 会尝试依次加载以下文件：
+
+```text
+NotoSansSC-Regular.ttf
+NotoSansSC.ttf
+NotoSansSC-Regular.otf
+NotoSansSC-VF.ttf   # 仅在其他文件缺失时使用
+```
+
+如若仅有 VF 文件，jsPDF 可能无法正确映射中文字符，从而出现乱码。若遇到输出依旧怪异，请替换成或下载一个静态版本。
+
+> **重要**：若直接通过 `file://` 打开，浏览器的同源策略会阻止对 `fonts/` 目录的访问（CORS 错误），导致字体无法加载并出现乱码。请通过本地静态服务器（例如 `python -m http.server`、`npx serve` 等）或部署至 GitHub Pages 才能正常运行。
+
+### 故障排查
+
+脚本内部会在控制台打印加载过程的日志，包括每个尝试的字体名及可能的错误。若在生成 PDF 时出现乱码，请打开浏览器开发者工具查看相关消息，以便确定哪个文件被加载以及是否发生注册错误。
