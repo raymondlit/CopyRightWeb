@@ -6,6 +6,9 @@ const exportBtn = document.getElementById('exportBtn');
 const trimCheckbox = document.getElementById('trimPages');
 const statusEl = document.getElementById('status');
 const fileListEl = document.getElementById('fileList');
+const progressContainer = document.getElementById('progressContainer');
+const pdfProgress = document.getElementById('pdfProgress');
+const progressInfo = document.getElementById('progressInfo');
 
 // early warning if running from file:// - font fetches will be blocked by CORS
 if (location.protocol === 'file:') {
@@ -30,6 +33,9 @@ scanBtn.addEventListener('click', async () => {
     statusEl.textContent = '解压中...';
     currentFiles = [];
     fileListEl.textContent = '';
+    if (progressContainer) {
+        progressContainer.style.display = 'none';
+    }
 
     try {
         const zip = await JSZip.loadAsync(file);
@@ -54,6 +60,13 @@ scanBtn.addEventListener('click', async () => {
 
 exportBtn.addEventListener('click', () => {
     if (!currentFiles.length) return;
+    // reset and show progress UI
+    if (progressContainer) {
+        progressContainer.style.display = 'block';
+        pdfProgress.value = 0;
+        progressInfo.textContent = '';
+    }
+
     const { jsPDF } = window.jspdf;
     // try to load a Chinese-capable font from /fonts/; tries multiple common filenames
     async function tryLoadFont(doc) {
@@ -167,6 +180,7 @@ exportBtn.addEventListener('click', () => {
         if (loadedFont) {
             try { doc.setFont(loadedFont); } catch (e) { console.warn(e); }
         }
+        statusEl.textContent = '生成PDF中...';
         // metadata
         doc.setFontSize(fontSize + 2);
         doc.text('项目代码导出', margin, y);
@@ -175,7 +189,12 @@ exportBtn.addEventListener('click', () => {
         doc.text('生成时间: ' + new Date().toLocaleString(), margin, y);
         y += lineHeight * 1.5;
 
-        for (let f of currentFiles) {
+        const totalFiles = currentFiles.length;
+        const totalLines = currentFiles.reduce((sum,f) => sum + (f.lines || 0), 0);
+        let linesDone = 0;
+        const startTime = Date.now();
+        for (let idx = 0; idx < totalFiles; idx++) {
+            let f = currentFiles[idx];
             // file header using the same font (should display Chinese if any)
             doc.setFontSize(fontSize + 1);
             if (y + lineHeight > pageHeight - margin) { doc.addPage(); y = margin; }
@@ -190,6 +209,19 @@ exportBtn.addEventListener('click', () => {
             if (y + lineHeight > pageHeight - margin) { doc.addPage(); y = margin; }
             addText(f.content);
             y += lineHeight; // small gap after content
+
+            // update progress after each file
+            linesDone += f.lines || 0;
+            if (pdfProgress && progressInfo) {
+                const elapsed = Date.now() - startTime;
+                const avgLine = elapsed / (linesDone || 1);
+                const remainingMs = Math.max(0, (totalLines - linesDone) * avgLine);
+                let remainingSec = Math.ceil(remainingMs / 1000);
+                // format as mm:ss
+                let remainingText = remainingSec < 60 ? `${remainingSec} 秒` : `${Math.floor(remainingSec/60)} 分 ${remainingSec%60} 秒`;
+                pdfProgress.value = totalLines ? (linesDone / totalLines) * 100 : (idx + 1) / totalFiles * 100;
+                progressInfo.textContent = `已处理 ${idx + 1}/${totalFiles} 个文件 (${linesDone} 行)，预计剩余 ${remainingText}`;
+            }
         }
 
         if (trimCheckbox && trimCheckbox.checked) {
@@ -200,6 +232,15 @@ exportBtn.addEventListener('click', () => {
                     doc.deletePage(p);
                 }
             }
+        }
+        // finalize progress UI
+        if (pdfProgress && progressInfo) {
+            pdfProgress.value = 100;
+            progressInfo.textContent = '生成完成';
+            // hide container after a few seconds to clean up
+            setTimeout(() => {
+                if (progressContainer) progressContainer.style.display = 'none';
+            }, 3000);
         }
         doc.save('code_export.pdf');
         statusEl.textContent = 'PDF 下载完成';

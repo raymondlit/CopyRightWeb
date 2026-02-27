@@ -19,6 +19,11 @@
         <input type="checkbox" id="trimPages" /> 仅输出前30页与后30页
     </label>
     <div id="status"></div>
+    <!-- progress indicator for PDF export -->
+    <div id="progressContainer" style="display:none; margin-top:8px;">
+        <progress id="pdfProgress" value="0" max="100" style="width:100%;"></progress>
+        <div id="progressInfo" style="font-size:0.9em; margin-top:4px;"></div>
+    </div>
     <pre id="fileList"></pre>
     <div id="copyright" style="margin-top:8px;color:gray;font-size:0.9em;">
         洛阳理工学院 李蒙 | limeng@lit.edu.cn
