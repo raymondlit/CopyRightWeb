@@ -16,3 +16,15 @@ body {
 button {
     margin-left: .5rem;
 }
+
+/* progress bar styling */
+#progressContainer {
+    /* hidden by default; shown during PDF export */
+}
+#pdfProgress {
+    height: 1rem;
+}
+#progressInfo {
+    color: #333;
+}
+
